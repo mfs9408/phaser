@@ -32,7 +32,6 @@
       let score = 0;
       let scoreText = "Score: " + score;
       let bombs;
-      let x;
 
       function preload() {
         this.load.image("sky", "assets/sky.png");
@@ -53,7 +52,6 @@
         platforms.create(600, 450, "ground");
         platforms.create(50, 350, "ground");
         platforms.create(700, 300, "ground");
-        // platforms.create(300, 150, "ground").setScale(0.8).refreshBody();
 
         player = this.physics.add.sprite(100, 450, "dude");
         player.setBounce(0.2);
@@ -85,12 +83,6 @@
         cursors = this.input.keyboard.createCursorKeys();
 
         stars = this.physics.add.group();
-
-        // {
-        //   key: "star",
-        //           repeat: 0,
-        //         setXY: { x: 12, y: 0, stepX: 70 },
-        // }
 
         star = stars.create(Phaser.Math.Between(0, 800), 0, "star");
 
@@ -145,11 +137,6 @@
         bomb.setBounce(1);
         bomb.setCollideWorldBounds(true);
         bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
-      }
-
-      function createStar(star) {
-        stars.create(Phaser.Math.Between(0, 800), 0, "star");
-        createStar(star);
       }
 
       function hitBomb(player, bomb) {
