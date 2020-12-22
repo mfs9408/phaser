@@ -12,7 +12,7 @@
         physics: {
           default: "arcade",
           arcade: {
-            gravity: { y: 300 },
+            gravity: { y: 50 },
             debug: false,
           },
         },
@@ -45,18 +45,29 @@
       }
 
       function create() {
-        this.add.image(400, 300, "sky");
+        // Событие создаёт петлю, которая с некоторой периодичностью создаёт новую звезду
+        this.time.addEvent({
+          delay: Phaser.Math.Between(2000, 5000),
+          callback: createNewStar,
+          callbackScope: this,
+          loop: true,
+        });
 
+        this.add.image(400, 300, "sky");
+        // Создаёт платформы на карте
         platforms = this.physics.add.staticGroup();
         platforms.create(400, 568, "ground").setScale(2).refreshBody();
         platforms.create(600, 450, "ground");
         platforms.create(50, 350, "ground");
         platforms.create(700, 300, "ground");
 
+        // Создаёт игрока
         player = this.physics.add.sprite(100, 450, "dude");
         player.setBounce(0.2);
         player.setCollideWorldBounds(true);
-        player.body.setGravityY(50);
+        player.body.setGravityY(280);
+        this.physics.add.collider(player, platforms);
+        cursors = this.input.keyboard.createCursorKeys();
 
         this.anims.create({
           key: "left",
@@ -78,31 +89,28 @@
           repeat: -1,
         });
 
-        this.physics.add.collider(player, platforms);
-
-        cursors = this.input.keyboard.createCursorKeys();
-
+        // код, отвечающий за звёзды
         stars = this.physics.add.group();
-
-        star = stars.create(Phaser.Math.Between(0, 800), 0, "star");
-
-        stars.children.iterate(function (child) {
-          child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
-        });
-
-        this.physics.add.collider(player, platforms);
-        this.physics.add.collider(stars, platforms);
-
+        star = stars.create(Phaser.Math.Between(12, 788), 0, "star");
         this.physics.add.overlap(player, stars, collectStar, null, this);
+        // Добавляет возможность отпрыгивать звезде
+        // stars.children.iterate(function (child) {
+        //   child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
+        // });
 
+        // Добавляет возможность соприкосаться с препятствиями и оставаться на них
+        // this.physics.add.collider(stars, platforms);
+
+        //код, отвечающий за бомбы
+        bombs = this.physics.add.group();
+        this.physics.add.collider(bombs, platforms);
+        this.physics.add.collider(player, bombs, hitBomb, null, this);
+
+        // Выводит очки
         scoreText = this.add.text(16, 16, scoreText, {
           fontSize: "32px",
           fill: "#000",
         });
-
-        bombs = this.physics.add.group();
-        this.physics.add.collider(bombs, platforms);
-        this.physics.add.collider(player, bombs, hitBomb, null, this);
       }
 
       function update() {
@@ -131,12 +139,19 @@
         score += 10;
         scoreText.setText("Score: " + score);
 
-        stars.create(Phaser.Math.Between(0, 800), 0, "star");
+        if (stars.countActive(true) === 0) {
+          stars.create(Phaser.Math.Between(12, 788), 0, "star");
+        }
 
+        // Создаёт бомбы
         let bomb = bombs.create(Phaser.Math.Between(0, 800), 16, "bomb");
         bomb.setBounce(1);
         bomb.setCollideWorldBounds(true);
         bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
+      }
+
+      function createNewStar() {
+        stars.create(Phaser.Math.Between(12, 788), 0, "star");
       }
 
       function hitBomb(player, bomb) {
